@@ -2,19 +2,16 @@ from bs4 import BeautifulSoup
 import requests
 from fake_useragent import UserAgent
 
-link = input('Enter link: ')
-
 
 class Filtr():
     def __init__(self, link):
         self.link = link
         self.out_put = []
-        self.author = ''
-        self.title = ''
-        self.date = ''
+        self.article = {'date':'', 'author':'', 'date':'', 'text':'' }
         self.response = requests.get(self.link, headers={'User-Agent': UserAgent().chrome})
         self.response.encoding = 'utf-8'
         self.soup = BeautifulSoup(self.response.text, 'lxml')
+
 
     def fname(self):
         '''формируется имя файла'''
@@ -62,25 +59,18 @@ class Filtr():
             # исключаем оставшися мусор по типу "\t\n\n\n\Подпишись!"
             if x not in new_out and ('\n' or '\r' or '\t' ) not in x:
                 if x != '':
-                    new_out.append(x)
+                    new_out.append(x)    
 
-        self.date = self.soup.find('time')['datetime'].strip()
-        self.title = self.soup.title.text
-        self.author = new_out[-1]
-        self.out_put = new_out[:-1]
+        self.article['date'] = self.soup.find('time')['datetime'].strip()
+        self.article['title'] = self.soup.title.text
+        self.article['author'] = new_out[-1]
+        self.article['text'] = ''.join(new_out[:-1])
 
-        print(self.date)
-        print(self.title)
-        print(self.author)
-        print(self.out_put)
+        return self.article
 
-        with open(self.fname(), 'w') as fl: #открываем файл, записываем информацию
-            self.writer(self.soup.title.text, fl)
-            print('\n', file=fl, end='')
-            for x in new_out:
-                self.writer(x, fl)
-                print('\n', file=fl, end='')
-
-
-one = Filtr(link)
-one.finder()
+        # with open(self.fname(), 'w') as fl: #открываем файл, записываем информацию
+        #     self.writer(self.soup.title.text, fl)
+        #     print('\n', file=fl, end='')
+        #     for x in new_out:
+        #         self.writer(x, fl)
+        #         print('\n', file=fl, end='')
