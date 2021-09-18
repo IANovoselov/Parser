@@ -7,70 +7,25 @@ class Filtr():
     def __init__(self, link):
         self.link = link
         self.out_put = []
-        self.article = {'date':'', 'author':'', 'date':'', 'text':'' }
+        self.article = {'date': '', 'author': '', 'title': '', 'text': ''}
         self.response = requests.get(self.link, headers={'User-Agent': UserAgent().chrome})
         self.response.encoding = 'utf-8'
         self.soup = BeautifulSoup(self.response.text, 'lxml')
 
-
-    def fname(self):
-        '''формируется имя файла'''
-        return 'name.txt'
-
     def content_p(self, div):
-        '''если в div более 2 p, то метод вытаскивыет текстовую информацию, предварительно вставив ссылки'''
-        if 2 < len(div.find_all('p')) < 9:
-            for p in div.find_all('p'):
-                p = p.text
-                self.out_put.append(p)
+        """информаия, содержащаяся в параграфах"""
+        for p in div.find_all('p'):
+            self.out_put.append(p.text)
         return self.out_put
 
-
-    def part_of_strings(self, string):
-        '''возвращает строку длиной не более 80 символов'''
-        if len(string) > 80:
-            if string[80] == ' ':
-                return string[0:80]
-            else:
-                for i in range(79, 0, -1):
-                    if string[i] == ' ':
-                        return string[0:i]
-        else:
-            return string
-
-    def writer(self, string, file_name):
-        '''принимает строку, делит на подстроки с помощью метода part_of_strings() и записывает в файл, отбивая абзац пустой строкой'''
-        while string != '':
-            ans = (self.part_of_strings(string))
-            print(ans, file=file_name, end='\n')
-            if len(ans) == len(string):
-                string = ''
-            else:
-                string = string[len(ans):].lstrip()
-
     def finder(self):
-        '''главный метод, осуществляет поиск таких эдементов разметки html, как article, div , p'''
+        """главный метод, осуществляет поиск таких эдементов разметки div"""
         answer = []
-        for div in self.soup.find_all('div'):
-            answer.extend(self.content_p(div))
-
-        new_out = []
-        for x in answer:
-            # исключаем оставшися мусор по типу "\t\n\n\n\Подпишись!"
-            if x not in new_out and ('\n' or '\r' or '\t' ) not in x:
-                if x != '':
-                    new_out.append(x)    
+        answer.extend(self.content_p(self.soup.find('div', {"class": "b-topic__content"})))
 
         self.article['date'] = self.soup.find('time')['datetime'].strip()
         self.article['title'] = self.soup.title.text
-        self.article['author'] = new_out[-1]
-        self.article['text'] = ''.join(new_out[:-1])
+        self.article['author'] = answer[-1]
+        self.article['text'] = ''.join(answer[:-1])
 
         return self.article
-
-        # with open(self.fname(), 'w') as fl: #открываем файл, записываем информацию
-        #     self.writer(self.soup.title.text, fl)
-        #     print('\n', file=fl, end='')
-        #     for x in new_out:
-        #         self.writer(x, fl)
-        #         print('\n', file=fl, end='')

@@ -14,8 +14,7 @@ app.config['dbconfig'] = {'host': '127.0.0.1',
 
 @app.route('/article', methods=['GET'])
 def get_article() -> 'json':
-    url = request.args.get('url')
-    article = Filtr(link = url)
+    article = Filtr(link = request.args.get('url'))
     # try:
     #     with UseDataBase(app.config['dbconfig']) as cursor:
     #         _SQL = """select * from aircrafts"""
@@ -26,6 +25,7 @@ def get_article() -> 'json':
     # except ConnectionErrors as err:
     #     print('Is your data base switched on?', str(err))
     return jsonify(article.finder())
+
 
 @app.errorhandler(404)
 def not_found(error):
